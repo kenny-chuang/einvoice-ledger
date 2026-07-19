@@ -1,0 +1,42 @@
+automation:
+  - alias: 電子發票登入失效通知
+    id: einvoice_login_required
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.einvoice_login_required
+        to: "on"
+    actions:
+      - action: persistent_notification.create
+        data:
+          notification_id: einvoice_login_required
+          title: 電子發票需要重新登入
+          message: 請開啟「發票記帳助手」完成財政部登入續期。
+
+  - alias: 電子發票連續同步異常
+    id: einvoice_sync_problem
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.einvoice_sync_problem
+        to: "on"
+        for: "00:10:00"
+    actions:
+      - action: persistent_notification.create
+        data:
+          notification_id: einvoice_sync_problem
+          title: 電子發票同步失敗
+          message: 已連續三次同步失敗，請開啟資料品質中心及同步紀錄查看安全錯誤代碼。
+
+  - alias: 電子發票預算與低價事件
+    id: einvoice_notification_event
+    triggers:
+      - trigger: mqtt
+        topic: einvoice/events
+    conditions:
+      - condition: template
+        value_template: "{{ trigger.payload_json.event_type in ['budget_threshold', 'target_price', 'historical_low'] }}"
+    actions:
+      - action: persistent_notification.create
+        data:
+          notification_id: "einvoice_{{ trigger.payload_json.event_id }}"
+          title: "{{ trigger.payload_json.title }}"
+          message: "{{ trigger.payload_json.message }}"

@@ -1,0 +1,41 @@
+.DS_Store
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Local runtimes and generated files
+.conda/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.log
+.coverage
+htmlcov/
+
+# Personal invoice data and browser sessions
+data/
+!einvoice_ledger/data/
+einvoice_ledger/data/*
+!einvoice_ledger/data/.gitkeep
+staging/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.csv
+!einvoice_ledger/tests/fixtures/anonymous/*.csv
+browser-state*.json
+crawler-debug*.json
+crawler-error*.png
+login-submit-error*.png
+einvoice_ledger/docs/screenshots/discounts.png
+einvoice_ledger/docs/screenshots/quality.png
+
+# Frontend dependencies, builds and reports
+**/frontend/node_modules/
+**/frontend/dist/
+**/frontend/test-results/
+**/frontend/playwright-report/
+**/frontend/coverage/

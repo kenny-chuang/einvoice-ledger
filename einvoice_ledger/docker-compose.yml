@@ -1,0 +1,17 @@
+services:
+  einvoice-ledger:
+    build:
+      context: .
+    ports:
+      # Bind to all local interfaces so phones on the same LAN can connect.
+      - "${EINVOICE_BIND_ADDRESS:-0.0.0.0}:${EINVOICE_PORT:-8000}:8000"
+    volumes:
+      - ./data:/data
+    environment:
+      E_INVOICE_DATA_DIR: /data
+      E_INVOICE_TIMEZONE: ${E_INVOICE_TIMEZONE:-Asia/Taipei}
+      MQTT_HOST: ${MQTT_HOST:-}
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+    restart: unless-stopped

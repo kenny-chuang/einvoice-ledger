@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - nodejs=22
+  - pip
+  - pip:
+      - -r requirements.txt

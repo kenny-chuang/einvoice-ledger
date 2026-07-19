@@ -1,0 +1,34 @@
+type: grid
+columns: 2
+square: false
+cards:
+  - type: entity
+    entity: sensor.einvoice_month_total
+    name: 本月支出
+    icon: mdi:cash
+  - type: entity
+    entity: sensor.einvoice_budget_remaining
+    name: 預算剩餘
+    icon: mdi:piggy-bank-outline
+  - type: entity
+    entity: sensor.einvoice_uncategorized_count
+    name: 待分類
+    icon: mdi:shape-outline
+  - type: entity
+    entity: sensor.einvoice_unallocated_discounts
+    name: 未分攤折扣
+    icon: mdi:ticket-percent-outline
+  - type: entity
+    entity: sensor.einvoice_data_quality_issues
+    name: 資料品質問題
+    icon: mdi:database-alert-outline
+  - type: entity
+    entity: sensor.einvoice_last_price_alert
+    name: 最近低價
+    icon: mdi:tag-arrow-down-outline
+  - type: entities
+    title: 電子發票同步
+    entities:
+      - binary_sensor.einvoice_login_required
+      - binary_sensor.einvoice_sync_problem
+      - sensor.einvoice_last_sync
