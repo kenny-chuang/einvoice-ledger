@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1
+
+- Docker 與 Home Assistant 環境改用 headless Chromium，避免缺少 X Server 導致同步狀態 API 失敗。
+- 新增不啟動瀏覽器、不連線財政部的 `/api/health`，供 Docker healthcheck 與 HA watchdog 使用。
+- 更新 Playwright E2E 導覽流程，符合精簡後的四個主要入口。
+- 統一 Docker、Home Assistant、前端與系統資訊的版本號。
+
 ## 1.0.0
 
 - Vue 3 `<script setup>` 成為唯一介面，新增資料品質、分類預算與價格提醒頁面。

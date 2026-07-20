@@ -94,7 +94,7 @@ einvoice_ledger/data/einvoice.db
 ## 驗證安裝
 
 ```sh
-curl http://127.0.0.1:8000/api/status
+curl http://127.0.0.1:8000/api/health
 ```
 
 空白系統第一次回應沒有同步紀錄是正常現象。若容器無法啟動：

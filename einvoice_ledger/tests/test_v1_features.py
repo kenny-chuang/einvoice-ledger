@@ -16,6 +16,7 @@ from app.models import (
 )
 from app.quality_service import resolve_quality_issue
 from app.sync_service import SyncCoordinator
+from app.routers import system as system_router_module
 from test_importer import CSV, UNQUOTED_ADDRESS_COMMA_CSV
 
 
@@ -30,6 +31,14 @@ def make_factory():
         connection.exec_driver_sql("PRAGMA foreign_keys=ON")
     Base.metadata.create_all(engine)
     return sessionmaker(bind=engine, expire_on_commit=False)
+
+
+def test_health_status_only_checks_database(monkeypatch):
+    test_engine = create_engine("sqlite:///:memory:")
+    monkeypatch.setattr(system_router_module, "engine", test_engine)
+    monkeypatch.setenv("E_INVOICE_VERSION", "1.0.1")
+
+    assert system_router_module.health_status() == {"status": "ok", "version": "1.0.1"}
 
 
 def test_budget_uses_positive_items_allocated_discounts_and_dedupes_thresholds():

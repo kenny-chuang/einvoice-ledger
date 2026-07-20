@@ -30,7 +30,7 @@ from .routers.alerts import router as alerts_router
 from .routers.budgets import router as budgets_router
 from .routers.quality import router as quality_router
 from .routers.sync import build_router as build_sync_router
-from .routers.system import router as system_router
+from .routers.system import health_router, router as system_router
 from .routers.auth import build_router as build_auth_router
 from .routers.categories import build_router as build_categories_router
 from .routers.dashboard import build_router as build_dashboard_router
@@ -96,6 +96,7 @@ app.include_router(quality_router)
 app.include_router(budgets_router)
 app.include_router(alerts_router)
 app.include_router(system_router)
+app.include_router(health_router)
 app.include_router(build_sync_router(sync_coordinator))
 app.mount(
     "/app",

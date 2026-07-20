@@ -1,7 +1,9 @@
 # 發票記帳助手
 
-> 專案目錄：`side project/einvoice_ledger/`  
-> 版本：`1.0.0`  
+> 專案目錄：`side project/einvoice_ledger/`
+>
+> 版本：`1.0.1`
+>
 > 型態：單一使用者、私有部署、Home Assistant App
 
 發票記帳助手是一套以台灣財政部電子發票消費明細為資料來源的私人記帳工具。它把功能集中在發票同步、消費查詢、錯誤修正與歷史單價比較，避免日常介面變成複雜的財務管理系統。
@@ -309,7 +311,7 @@ MQTT 未安裝或中斷時，Web App 仍可完整記帳；尚未發布的通知�
 ./.conda/bin/python -m pytest -q
 ./.conda/bin/npm --prefix frontend run test -- --run
 ./.conda/bin/npm --prefix frontend run build
-docker build -t einvoice-ledger:1.0.0 .
+docker build -t einvoice-ledger:1.0.1 .
 ```
 
 測試涵蓋地址逗號、欄位位移、空數量、空單價、負折扣、作廢、重複匯入、商品別名、兩月份 rollback、登入失效、下載空檔、預算門檻、價格提醒及 MQTT 斷線補送。
