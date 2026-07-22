@@ -13,6 +13,16 @@ class FakeOcr:
         return " A-1_b 2! "
 
 
+class FakeStorageContext:
+    def __init__(self):
+        self.arguments = None
+
+    async def storage_state(self, **kwargs):
+        self.arguments = kwargs
+        with open(kwargs["path"], "w", encoding="utf-8") as state_file:
+            state_file.write('{"cookies": []}')
+
+
 def test_month_dates_cover_leap_year_and_reject_invalid_input():
     assert InvoiceCrawler.month_dates("202602") == ("2026-02-01", "2026-02-28")
     assert InvoiceCrawler.month_dates("202402") == ("2024-02-01", "2024-02-29")
@@ -33,3 +43,14 @@ def test_expired_or_unknown_login_challenge_is_rejected_without_browser(tmp_path
     crawler = InvoiceCrawler(tmp_path)
     with pytest.raises(LoginRequired, match="已過期"):
         asyncio.run(crawler.login("missing", "account", "password", "1234"))
+
+
+def test_storage_state_is_saved_atomically_without_indexed_db(tmp_path):
+    crawler = InvoiceCrawler(tmp_path)
+    context = FakeStorageContext()
+
+    asyncio.run(crawler._save_storage_state(context))
+
+    assert crawler.state_path.read_text(encoding="utf-8") == '{"cookies": []}'
+    assert context.arguments == {"path": str(tmp_path / "browser-state.json.tmp")}
+    assert not (tmp_path / "browser-state.json.tmp").exists()

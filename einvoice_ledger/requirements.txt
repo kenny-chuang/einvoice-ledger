@@ -4,7 +4,7 @@ sqlalchemy==2.0.43
 alembic==1.16.5
 python-multipart==0.0.20
 apscheduler==3.11.0
-playwright==1.55.0
+patchright==1.61.2
 pytest==8.4.1
 httpx==0.28.1
 ddddocr==1.6.1

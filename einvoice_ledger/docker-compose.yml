@@ -7,10 +7,16 @@ services:
       - "${EINVOICE_BIND_ADDRESS:-0.0.0.0}:${EINVOICE_PORT:-8000}:8000"
     volumes:
       - ./data:/data
+    extra_hosts:
+      # Some Docker Desktop DNS resolvers cannot resolve this government
+      # hostname. Keep the working Cloudflare edge overridable because its IP
+      # may change; Home Assistant deployments can set the current value.
+      - "www.einvoice.nat.gov.tw:${EINVOICE_PORTAL_IP:-162.159.140.140}"
     environment:
       E_INVOICE_DATA_DIR: /data
       E_INVOICE_TIMEZONE: ${E_INVOICE_TIMEZONE:-Asia/Taipei}
-      E_INVOICE_BROWSER_HEADLESS: ${E_INVOICE_BROWSER_HEADLESS:-1}
+      # Patchright is most effective in headful mode; run.sh provides Xvfb.
+      E_INVOICE_BROWSER_HEADLESS: ${E_INVOICE_BROWSER_HEADLESS:-0}
       MQTT_HOST: ${MQTT_HOST:-}
       MQTT_PORT: ${MQTT_PORT:-1883}
       MQTT_USERNAME: ${MQTT_USERNAME:-}
