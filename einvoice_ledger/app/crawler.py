@@ -15,7 +15,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
-from playwright.async_api import Browser, BrowserContext, Page, Playwright, async_playwright
+from patchright.async_api import Browser, BrowserContext, Page, Playwright, async_playwright
 
 
 LOGIN_URL = "https://www.einvoice.nat.gov.tw/portal/btc/mobile/btc502w/detail"
@@ -96,6 +96,23 @@ class InvoiceCrawler:
 
     async def _launch_browser(self, playwright: Playwright) -> Browser:
         return await playwright.chromium.launch(headless=self.headless)
+
+    async def _save_storage_state(self, context: BrowserContext) -> None:
+        """Persist the authenticated browser state atomically.
+
+        The portal authentication is cookie based. Asking Patchright to include
+        IndexedDB makes it query every page origin through CDP and can time out
+        immediately after the SSO redirect. The regular storage state contains
+        the cookies and localStorage required by subsequent sync runs.
+        """
+        temporary_path = self.state_path.with_suffix(".json.tmp")
+        try:
+            await context.storage_state(path=str(temporary_path))
+            os.chmod(temporary_path, 0o600)
+            os.replace(temporary_path, self.state_path)
+        finally:
+            if temporary_path.exists():
+                temporary_path.unlink()
 
     async def _capture_error(self, page: Page, path: Path) -> None:
         """Save a viewport-only diagnostic with account-like data obscured."""
@@ -220,15 +237,25 @@ class InvoiceCrawler:
                 except Exception as exc:
                     await self._capture_error(page, self.data_dir / "login-submit-error.png")
                     raise LoginRequired("財政部登入按鈕未能送出，請重新載入登入畫面後再試。") from exc
-                # The current portal submits through JavaScript and only redirects
-                # after the API response. A rejected request re-enables submitBtn.
-                for _ in range(120):
-                    if not await self._is_login_page(page):
-                        break
-                    if await page.locator("#submitBtn").is_enabled():
-                        await page.wait_for_timeout(400)
-                        break
+                # The portal submits through JavaScript and redirects after its
+                # API response. Avoid querying the DOM while that navigation is
+                # replacing the document: Patchright correctly waits for a stable
+                # execution context and the old polling loop could time out here.
+                deadline = asyncio.get_running_loop().time() + 35
+                while asyncio.get_running_loop().time() < deadline:
                     await page.wait_for_timeout(250)
+                    if "/accounts/login/" not in page.url:
+                        break
+                    try:
+                        submit = page.locator("#submitBtn")
+                        if await submit.count() == 1 and await submit.is_enabled(timeout=500):
+                            # Give visible validation widgets a moment to render.
+                            await page.wait_for_timeout(400)
+                            break
+                    except Exception:
+                        # A destroyed execution context is expected during the
+                        # successful redirect; the next iteration checks the URL.
+                        continue
                 await self._wait_for_page(page)
                 if await self._is_login_page(page) or "/accounts/" in page.url:
                     try:
@@ -248,8 +275,7 @@ class InvoiceCrawler:
                 # completed. Persist this exact context immediately; navigating
                 # to the portal a second time here can time out and falsely turn
                 # a successful login into a 502 response.
-                await pending.context.storage_state(path=str(self.state_path), indexed_db=True)
-                os.chmod(self.state_path, 0o600)
+                await self._save_storage_state(pending.context)
 
             previous = self._active
             self._active = pending
@@ -265,7 +291,12 @@ class InvoiceCrawler:
                 await self._close_pending(pending)
 
     async def _is_login_page(self, page: Page) -> bool:
-        return "/accounts/login/" in page.url or await page.locator("#mobile_phone").count() > 0
+        if "/accounts/login/" in page.url:
+            return True
+        try:
+            return await asyncio.wait_for(page.locator("#mobile_phone").count(), timeout=1) > 0
+        except Exception:
+            return False
 
     async def _is_security_page(self, page: Page) -> bool:
         return (
@@ -565,8 +596,7 @@ class InvoiceCrawler:
                             await self._capture_error(page, self.error_screenshot_path)
                             await self._write_debug_metadata(page)
                             raise
-                    await active.context.storage_state(path=str(self.state_path), indexed_db=True)
-                    os.chmod(self.state_path, 0o600)
+                    await self._save_storage_state(active.context)
                     self._session_valid = True
                     self._session_checked_at = datetime.now(UTC)
                     return downloads
@@ -600,8 +630,7 @@ class InvoiceCrawler:
                         await self._capture_error(page, self.error_screenshot_path)
                         await self._write_debug_metadata(page)
                         raise
-                await context.storage_state(path=str(self.state_path), indexed_db=True)
-                os.chmod(self.state_path, 0o600)
+                await self._save_storage_state(context)
                 self._session_valid = True
                 self._session_checked_at = datetime.now(UTC)
                 await context.close()

@@ -11,12 +11,12 @@ FROM python:3.12-slim-bookworm
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     E_INVOICE_DATA_DIR=/data \
-    E_INVOICE_BROWSER_HEADLESS=1
+    E_INVOICE_BROWSER_HEADLESS=0
 
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
-    && playwright install --with-deps chromium
+    && patchright install --with-deps chromium
 COPY app ./app
 COPY alembic.ini ./alembic.ini
 COPY alembic ./alembic
