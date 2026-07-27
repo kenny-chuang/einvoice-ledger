@@ -30,4 +30,4 @@
 
 > 這是單一使用者、私有部署的生活工具。資料庫、CSV、Cookie、登入工作階段與診斷截圖皆由 `.gitignore` 排除。
 
-[查看 Kenny 的個人履歷網站](https://kenny-chuang-resume.fact780404.chatgpt.site/)
+[查看 Kenny 的個人履歷網站](https://kenny-chuang.github.io/)
